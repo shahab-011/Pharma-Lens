@@ -34,24 +34,21 @@ app = FastAPI(
 # 3. CORS CONFIGURATION
 # ============================================================
 
+cors_origins_raw = os.getenv(
+    "CORS_ORIGINS",
+    "http://localhost:5173,http://127.0.0.1:5173"
+)
+allowed_origins = [o.strip() for o in cors_origins_raw.split(",") if o.strip()]
+
+# If "*" is in origins, set allow_credentials to False per CORS spec
+allow_credentials = "*" not in allowed_origins
+
 app.add_middleware(
     CORSMiddleware,
-
-    allow_origins=[
-        origin.strip()
-        for origin in os.getenv(
-            "CORS_ORIGINS",
-            "http://localhost:5173,http://127.0.0.1:5173"
-        ).split(",")
-        if origin.strip()
-    ],
-
-    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?$",
-
-    allow_credentials=True,
-
+    allow_origins=allowed_origins if allowed_origins else ["*"],
+    allow_origin_regex=r"https://.*\.netlify\.app|http://localhost:\d+|http://127\.0\.0\.1:\d+",
+    allow_credentials=allow_credentials,
     allow_methods=["*"],
-
     allow_headers=["*"],
 )
 
@@ -69,12 +66,12 @@ parser = PydanticOutputParser(
 # 5. GROQ MODEL
 # ============================================================
 
+groq_model_name = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
+
 model = ChatGroq(
-    model="openai/gpt-oss-20b",
+    model=groq_model_name,
     temperature=0,
     max_tokens=4096,
-    reasoning_effort="low",
-    include_reasoning=False
 )
 
 

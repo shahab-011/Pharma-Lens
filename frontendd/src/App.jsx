@@ -1,7 +1,8 @@
 import { useState } from "react";
 import "./App.css";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+const rawApiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8001";
+const API_URL = rawApiUrl.replace(/\/+$/, "");
 
 function App() {
   const [page, setPage] = useState("analyzer");

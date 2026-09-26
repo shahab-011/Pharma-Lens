@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class PharmaDocument(BaseModel):
@@ -150,3 +150,30 @@ class PharmaDocument(BaseModel):
     data_quality_issues: List[str] = Field(
         default_factory=list
     )
+
+    # ============================================================
+    # ROBUST LLM OUTPUT VALIDATION
+    # ============================================================
+
+    @field_validator(
+        "countries",
+        "secondary_endpoints",
+        "other_outcomes",
+        "adverse_events",
+        "serious_adverse_events",
+        "treatment_related_events",
+        "company_statements",
+        "limitations",
+        "missing_information",
+        "contradictions",
+        "ambiguous_statements",
+        "data_quality_issues",
+        mode="before"
+    )
+    @classmethod
+    def coerce_none_to_list(cls, v):
+        if v is None:
+            return []
+        if isinstance(v, str):
+            return [v] if v.strip() else []
+        return v
